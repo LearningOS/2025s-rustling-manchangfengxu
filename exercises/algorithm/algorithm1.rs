@@ -29,13 +29,13 @@ struct LinkedList<T> {
     end: Option<NonNull<Node<T>>>,
 }
 
-impl<T> Default for LinkedList<T> {
+impl<T: std::cmp::PartialOrd + Clone> Default for LinkedList<T> {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<T> LinkedList<T> {
+impl<T: std::cmp::PartialOrd + Clone> LinkedList<T> {
     pub fn new() -> Self {
         Self {
             length: 0,
@@ -70,13 +70,45 @@ impl<T> LinkedList<T> {
         }
     }
 	pub fn merge(list_a:LinkedList<T>,list_b:LinkedList<T>) -> Self
+    where 
+        T: Clone
 	{
-		//TODO
-		Self {
-            length: 0,
-            start: None,
-            end: None,
+        let mut c = LinkedList::default();
+        let mut a_start = list_a.start;
+        let mut b_start = list_b.start;
+
+        if list_a.length == 0  {
+        	return list_b;
         }
+        if list_b.length == 0  {
+        	return list_a;
+        }
+        while a_start.is_some() && b_start.is_some() {
+        	let a_val = unsafe{(*(a_start.unwrap()).as_ptr()).val.clone()};
+        	let b_val = unsafe{(*(b_start.unwrap()).as_ptr()).val.clone()};
+            if a_val < b_val {
+            	c.add(a_val);
+            	a_start = unsafe{(*(a_start.unwrap()).as_ptr()).next};
+            }else{
+            	c.add(b_val);
+            	b_start = unsafe{(*(b_start.unwrap()).as_ptr()).next};
+            }
+        }
+        
+        if list_a.length > list_b.length {
+            while a_start.is_some() {
+                let a_val = unsafe{(*(a_start.unwrap()).as_ptr()).val.clone()};
+                a_start = unsafe{(*(a_start.unwrap()).as_ptr()).next};
+                c.add(a_val);
+            }
+        }else {
+            while b_start.is_some() {
+                let b_val = unsafe{(*(b_start.unwrap()).as_ptr()).val.clone()};
+                b_start = unsafe{(*(b_start.unwrap()).as_ptr()).next};
+                c.add(b_val);
+            }
+        }
+        c
 	}
 }
 
